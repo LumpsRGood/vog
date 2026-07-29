@@ -56,19 +56,53 @@ export function ContactForm() {
     setIsSubmitting(true);
     
     try {
-      // In a real static site, you would point this to Formspree, EmailJS, or similar:
-      // const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
       
-      // Simulating a network request for the demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsSuccess(true);
+      // If the key is not set, we'll simulate success for demo purposes, 
+      // but in production on Cloudflare, it will use the real key.
+      if (!accessKey) {
+        console.warn("VITE_WEB3FORMS_ACCESS_KEY is missing. Simulating submission.");
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setIsSuccess(true);
+      } else {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            subject: `New Guest Issue Report from ${formData.name}`,
+            from_name: "Voice of the Guest",
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            contactMethod: formData.contactMethod,
+            incidentDate: formData.date,
+            state: formData.state,
+            city: formData.city,
+            address: formData.address,
+            issueDescription: formData.issue,
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setIsSuccess(true);
+        } else {
+          throw new Error(result.message || 'Form submission failed');
+        }
+      }
+
       setFormData({ 
         name: '', contactMethod: 'email', email: '', phone: '', 
         date: '', state: '', city: '', address: '', issue: '' 
       });
     } catch (error) {
       console.error("Submission failed", error);
+      alert("There was an issue submitting your report. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
