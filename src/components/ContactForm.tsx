@@ -2,10 +2,12 @@ import React, { useMemo, useEffect } from 'react';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { GuestIssue } from '../types';
 import { STORE_LOCATIONS, STATES } from '../data/locations';
+import { supabase } from '../lib/supabase';
 
 export function ContactForm() {
   const [formData, setFormData] = React.useState<GuestIssue>({
     name: '',
+    contactType: 'opportunity',
     contactMethod: 'email',
     email: '',
     phone: '',
@@ -56,14 +58,33 @@ export function ContactForm() {
     setIsSubmitting(true);
     
     try {
+      // 1. Save to Supabase for tracking
+      if (supabase) {
+        const { error } = await supabase.from('issues').insert([{
+          name: formData.name,
+          contact_type: formData.contactType,
+          contact_method: formData.contactMethod,
+          email: formData.email,
+          phone: formData.phone,
+          date: formData.date,
+          state: formData.state,
+          city: formData.city,
+          address: formData.address,
+          issue: formData.issue
+        }]);
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          throw new Error('Failed to save to database');
+        }
+      } else {
+        console.warn('Supabase not configured, skipping db insert. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.');
+      }
+
+      // 2. Submit to Web3Forms
       const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
-      
-      // If the key is not set, we'll simulate success for demo purposes, 
-      // but in production on Cloudflare, it will use the real key.
       if (!accessKey) {
-        console.warn("VITE_WEB3FORMS_ACCESS_KEY is missing. Simulating submission.");
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsSuccess(true);
+        console.warn("VITE_WEB3FORMS_ACCESS_KEY is missing. Simulating Web3Forms submission.");
       } else {
         const response = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
@@ -73,11 +94,12 @@ export function ContactForm() {
           },
           body: JSON.stringify({
             access_key: accessKey,
-            subject: `New Guest Issue Report from ${formData.name}`,
+            subject: `New Guest ${formData.contactType === 'celebration' ? 'Celebration' : 'Opportunity'} from ${formData.name}`,
             from_name: "Voice of the Guest",
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
+            contactType: formData.contactType,
             contactMethod: formData.contactMethod,
             incidentDate: formData.date,
             state: formData.state,
@@ -88,18 +110,12 @@ export function ContactForm() {
         });
 
         const result = await response.json();
-
-        if (result.success) {
-          setIsSuccess(true);
-        } else {
-          throw new Error(result.message || 'Form submission failed');
+        if (!result.success) {
+          throw new Error(result.message || 'Web3Forms submission failed');
         }
       }
 
-      setFormData({ 
-        name: '', contactMethod: 'email', email: '', phone: '', 
-        date: '', state: '', city: '', address: '', issue: '' 
-      });
+      setIsSuccess(true);
     } catch (error) {
       console.error("Submission failed", error);
       alert("There was an issue submitting your report. Please try again.");
@@ -109,6 +125,13 @@ export function ContactForm() {
   };
 
   if (isSuccess) {
+    let successMessage = "";
+    if (formData.contactMethod === 'email') {
+      successMessage = "We have received your report. Please expect a message from feedback@voiceoftheguest.com and check your spam folder to make sure replies are going through if nothing is received in 24 hours.";
+    } else {
+      successMessage = "We have received your report. Please expect a call or text message from (555) 555-5555 within the next 24 hours.";
+    }
+
     return (
       <div className="bg-green-50 border border-green-200 rounded-2xl p-8 md:p-12 text-center animate-in fade-in zoom-in duration-500 shadow-sm max-w-2xl mx-auto">
         <div className="flex justify-center mb-6">
@@ -118,14 +141,8 @@ export function ContactForm() {
         </div>
         <h3 className="text-3xl font-semibold text-green-900 mb-4 tracking-tight">Thank You</h3>
         <p className="text-green-800 text-lg leading-relaxed max-w-lg mx-auto">
-          We have received your report. Our team will review the details and be in touch with you within 24 hours to help resolve your concern.
+          {successMessage}
         </p>
-        <button 
-          onClick={() => setIsSuccess(false)}
-          className="mt-8 px-8 py-3 bg-green-700 text-white font-medium rounded-lg hover:bg-green-800 transition-colors inline-flex items-center gap-2"
-        >
-          Submit another report
-        </button>
       </div>
     );
   }
@@ -133,6 +150,22 @@ export function ContactForm() {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Contact Type */}
+        <div className="space-y-2">
+          <label htmlFor="contactType" className="text-sm font-medium text-stone-700">Kind of Contact</label>
+          <select
+            id="contactType"
+            name="contactType"
+            value={formData.contactType}
+            onChange={handleChange}
+            className="w-full px-4 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-stone-900 focus:border-transparent outline-none transition-all"
+            required
+          >
+            <option value="opportunity">Opportunity (Feedback/Issue)</option>
+            <option value="celebration">Celebration (Praise/Compliment)</option>
+          </select>
+        </div>
+
         {/* Name and Contact Method */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
@@ -159,6 +192,7 @@ export function ContactForm() {
             >
               <option value="email">Email</option>
               <option value="phone">Phone Number</option>
+              <option value="text">Text Message</option>
             </select>
           </div>
         </div>

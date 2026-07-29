@@ -1,6 +1,7 @@
 export interface GuestIssue {
   name: string;
-  contactMethod: 'email' | 'phone';
+  contactType: 'celebration' | 'opportunity';
+  contactMethod: 'email' | 'phone' | 'text';
   email: string;
   phone: string;
   date: string;
