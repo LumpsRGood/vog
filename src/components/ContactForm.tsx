@@ -98,10 +98,6 @@ export function ContactForm() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-stone-900 mb-2">Tell Us About Your Visit...</h2>
-        <p className="text-stone-600 text-sm md:text-base">Our team will be in touch with you within 24 hours to help resolve your concern.</p>
-      </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name and Contact Method */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

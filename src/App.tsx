@@ -32,7 +32,7 @@ export default function App() {
             We're here to listen.
           </h2>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            Did you experience an issue during your stay? Please let us know the details below so our team can resolve it and ensure we provide the best possible experience.
+            Tell us about your experience. We'd love to know how we can celebrate someone if it was great or coach someone if there was an opportunity.
           </p>
         </div>
 
@@ -41,7 +41,8 @@ export default function App() {
 
       {/* Footer */}
       <footer className="max-w-5xl mx-auto px-6 py-12 text-center text-sm text-stone-400">
-        <p>&copy; {new Date().getFullYear()} Voice of the Guest. All rights reserved.</p>
+        <p>&copy; 2026 Lumps Are Good</p>
+        <p className="mt-1">We ❤️ You &bull; But You've Reached The End</p>
       </footer>
     </div>
   );
