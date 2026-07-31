@@ -4,41 +4,21 @@ This project uses Supabase for public website intake and Microsoft Lists as the 
 
 ## Bridge Choice
 
-The bridge is a Supabase Edge Function:
+The primary bridge is Power Automate:
 
-`issues` insert -> Supabase database trigger -> `sync-issue-to-lists` Edge Function -> Microsoft Graph -> Microsoft Lists `Guest Cases`
+`issues` insert -> Supabase database trigger -> Power Automate HTTP trigger -> Microsoft Lists `Guest Cases`
 
-This keeps website intake simple and keeps the work queue, status, follow-up, and reporting in Microsoft Lists.
+This avoids tenant-wide Microsoft Graph admin consent. The flow runs under the signed-in Microsoft account's normal SharePoint/Microsoft Lists connection.
 
-## Required Microsoft App Permissions
+The Microsoft Graph Edge Function remains in this repo as a future hardening option, but it requires tenant admin consent for `Sites.ReadWrite.All`.
 
-Create or use an Azure app registration with application permissions:
+## Power Automate Setup
 
-- `Sites.ReadWrite.All`
+Use the instructions in:
 
-Grant admin consent after adding the permission.
+`supabase/power-automate-flow.md`
 
-## Supabase Function Secrets
-
-Set these secrets before deploying the function:
-
-```sh
-supabase secrets set MS_TENANT_ID="d654250b-024b-4116-ad8e-36b58a13810a"
-supabase secrets set MS_CLIENT_ID="190887df-14d8-4032-ac39-7ba33622123d"
-supabase secrets set MS_CLIENT_SECRET="..."
-supabase secrets set MS_SITE_HOSTNAME="opportunityrestaurantgroup-my.sharepoint.com"
-supabase secrets set MS_SITE_PATH="/personal/gchadrick_opportunityrestaurantgroup_com"
-supabase secrets set SYNC_WEBHOOK_SECRET="choose-a-long-random-secret"
-```
-
-Optional, but useful after the first successful lookup:
-
-```sh
-supabase secrets set MS_SITE_ID="..."
-supabase secrets set MS_GUEST_CASES_LIST_ID="..."
-```
-
-## Deploy
+## Supabase Project
 
 Project ref:
 
@@ -46,26 +26,37 @@ Project ref:
 gcafnpypmmkipdwkgejw
 ```
 
+Project URL:
+
 ```sh
-supabase db push
-supabase functions deploy sync-issue-to-lists
+https://gcafnpypmmkipdwkgejw.supabase.co
 ```
 
-Then configure the trigger URL settings in SQL:
+## Deploy Database Trigger
+
+Apply the migration:
+
+`supabase/migrations/20260731110000_prepare_lists_sync.sql`
+
+Then configure the trigger URL setting in SQL after the Power Automate flow is saved:
 
 ```sql
-alter database postgres set app.settings.lists_sync_url =
-  'https://gcafnpypmmkipdwkgejw.supabase.co/functions/v1/sync-issue-to-lists';
+update public.vog_sync_settings
+set value = 'POWER_AUTOMATE_HTTP_POST_URL',
+    updated_at = now()
+where key = 'lists_sync_url';
 
-alter database postgres set app.settings.lists_sync_secret =
-  'same-long-random-secret-used-for-SYNC_WEBHOOK_SECRET';
+update public.vog_sync_settings
+set value = '',
+    updated_at = now()
+where key = 'lists_sync_secret';
 ```
 
-Reconnect or restart the database session after changing database settings.
-
-## GitHub Actions Deployment
+## Optional GitHub Actions Deployment
 
 The repository includes `.github/workflows/deploy-supabase.yml`.
+
+This workflow is for the optional Edge Function path. It is not required for the Power Automate workaround.
 
 Add these repository secrets before running it:
 

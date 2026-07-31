@@ -13,6 +13,20 @@ create index if not exists issues_store_number_idx on public.issues (store_numbe
 create index if not exists issues_state_city_idx on public.issues (state, city);
 create index if not exists issues_contact_type_idx on public.issues (contact_type);
 
+create table if not exists public.vog_sync_settings (
+  key text primary key,
+  value text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+alter table public.vog_sync_settings enable row level security;
+
+insert into public.vog_sync_settings (key, value)
+values
+  ('lists_sync_url', ''),
+  ('lists_sync_secret', '')
+on conflict (key) do nothing;
+
 create or replace function public.notify_lists_issue_sync()
 returns trigger
 language plpgsql
@@ -20,12 +34,20 @@ security definer
 set search_path = public
 as $$
 declare
-  sync_url text := current_setting('app.settings.lists_sync_url', true);
-  sync_secret text := current_setting('app.settings.lists_sync_secret', true);
+  sync_url text;
+  sync_secret text;
 begin
+  select value into sync_url
+  from public.vog_sync_settings
+  where key = 'lists_sync_url';
+
   if sync_url is null or sync_url = '' then
     return new;
   end if;
+
+  select value into sync_secret
+  from public.vog_sync_settings
+  where key = 'lists_sync_secret';
 
   perform extensions.net.http_post(
     url := sync_url,
