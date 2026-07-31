@@ -8,5 +8,6 @@ export interface GuestIssue {
   state: string;
   city: string;
   address: string;
+  storeNumber: string;
   issue: string;
 }

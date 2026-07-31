@@ -15,6 +15,7 @@ export function ContactForm() {
     state: '',
     city: '',
     address: '',
+    storeNumber: '',
     issue: ''
   });
   
@@ -34,6 +35,10 @@ export function ContactForm() {
     return STORE_LOCATIONS.filter(loc => loc.state === formData.state && loc.city === formData.city);
   }, [formData.state, formData.city]);
 
+  const selectedLocation = useMemo(() => {
+    return STORE_LOCATIONS.find(loc => loc.storeNumber === formData.storeNumber);
+  }, [formData.storeNumber]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => {
@@ -43,10 +48,16 @@ export function ContactForm() {
       if (name === 'state') {
         newData.city = '';
         newData.address = '';
+        newData.storeNumber = '';
       }
       // Reset address if city changes
       if (name === 'city') {
         newData.address = '';
+        newData.storeNumber = '';
+      }
+      if (name === 'storeNumber') {
+        const location = STORE_LOCATIONS.find(loc => loc.storeNumber === value);
+        newData.address = location ? location.address : '';
       }
       
       return newData;
@@ -70,6 +81,10 @@ export function ContactForm() {
           state: formData.state,
           city: formData.city,
           address: formData.address,
+          store_number: formData.storeNumber,
+          store_email: formData.storeNumber ? `ihop${formData.storeNumber}@opportunityrestaurantgroup.com` : null,
+          intake_channel: 'Website Form',
+          source: 'voiceoftheguest.com',
           issue: formData.issue
         }]);
         
@@ -105,6 +120,8 @@ export function ContactForm() {
             state: formData.state,
             city: formData.city,
             address: formData.address,
+            storeNumber: formData.storeNumber,
+            storeEmail: formData.storeNumber ? `ihop${formData.storeNumber}@opportunityrestaurantgroup.com` : '',
             issueDescription: formData.issue,
           })
         });
@@ -285,20 +302,25 @@ export function ContactForm() {
           <label htmlFor="address" className="text-sm font-medium text-stone-700">Address</label>
           <select 
             required
-            id="address"
-            name="address"
-            value={formData.address}
+            id="storeNumber"
+            name="storeNumber"
+            value={formData.storeNumber}
             onChange={handleChange}
             disabled={!formData.city || availableAddresses.length === 0}
             className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-900 focus:border-stone-900 outline-none transition-all bg-white disabled:bg-stone-100 disabled:text-stone-500"
           >
             <option value="" disabled>Select a location</option>
             {availableAddresses.map(loc => (
-              <option key={loc.storeNumber} value={`${loc.address} (Store #${loc.storeNumber})`}>
+              <option key={loc.storeNumber} value={loc.storeNumber}>
                 {loc.address} (Store #{loc.storeNumber})
               </option>
             ))}
           </select>
+          {selectedLocation && (
+            <p className="text-xs text-stone-500">
+              Store email: ihop{selectedLocation.storeNumber}@opportunityrestaurantgroup.com
+            </p>
+          )}
         </div>
 
         {/* Issue Description */}
