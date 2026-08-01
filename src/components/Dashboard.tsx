@@ -216,8 +216,8 @@ export function Dashboard() {
         {[
           { label: 'Total Cases', value: metrics.totalCases, icon: BarChart3 },
           { label: 'Last 7 Days', value: metrics.last7Days, icon: CalendarClock },
-          { label: 'Synced To Lists', value: metrics.syncedToLists, icon: CheckCircle2 },
-          { label: 'Pending Sync', value: metrics.pendingListsSync, icon: AlertCircle },
+          { label: 'Opportunities', value: metrics.opportunities, icon: AlertCircle },
+          { label: 'Celebrations', value: metrics.celebrations, icon: CheckCircle2 },
         ].map((item) => (
           <div key={item.label} className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
@@ -282,7 +282,7 @@ export function Dashboard() {
                     {formatLabel(guestCase.contact_type)}
                   </span>
                   <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
-                    {guestCase.lists_sync_status === 'synced' ? 'In Lists' : 'Sync pending'}
+                    Website form
                   </span>
                 </div>
               </article>
