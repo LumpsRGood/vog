@@ -96,42 +96,6 @@ export function ContactForm() {
         console.warn('Supabase not configured, skipping db insert. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.');
       }
 
-      // 2. Submit to Web3Forms
-      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
-      if (!accessKey) {
-        console.warn("VITE_WEB3FORMS_ACCESS_KEY is missing. Simulating Web3Forms submission.");
-      } else {
-        const response = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          },
-          body: JSON.stringify({
-            access_key: accessKey,
-            subject: `New Guest ${formData.contactType === 'celebration' ? 'Celebration' : 'Opportunity'} from ${formData.name}`,
-            from_name: "Voice of the Guest",
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            contactType: formData.contactType,
-            contactMethod: formData.contactMethod,
-            incidentDate: formData.date,
-            state: formData.state,
-            city: formData.city,
-            address: formData.address,
-            storeNumber: formData.storeNumber,
-            storeEmail: formData.storeNumber ? `ihop${formData.storeNumber}@opportunityrestaurantgroup.com` : '',
-            issueDescription: formData.issue,
-          })
-        });
-
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error(result.message || 'Web3Forms submission failed');
-        }
-      }
-
       setIsSuccess(true);
     } catch (error) {
       console.error("Submission failed", error);
