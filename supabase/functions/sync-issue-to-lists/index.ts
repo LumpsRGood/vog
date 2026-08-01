@@ -71,7 +71,9 @@ function alertCaseId(rawId: string) {
 
 function guestCasesUrlFor(rawId: string) {
   const filterValue = encodeURIComponent(alertCaseId(rawId));
-  return `https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Guest%20Cases/AllItems.aspx?FilterField1=Title&FilterValue1=${filterValue}`;
+  const listUrl = Deno.env.get("POWER_AUTOMATE_GUEST_CASES_URL") ||
+    "https://opportunityrestaurantgroup-my.sharepoint.com/personal/gchadrick_opportunityrestaurantgroup_com/Lists/Guest%20Cases/AllItems.aspx";
+  return `${listUrl}?FilterField1=Title&FilterValue1=${filterValue}`;
 }
 
 function issueWithCaseLink(record: IssueRecord, rawId: string) {
