@@ -59,29 +59,37 @@ List:
 
 `Guest Cases`
 
+Site address:
+
+`https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations`
+
 Recommended field mapping:
 
 | Microsoft Lists field | Power Automate value |
 | --- | --- |
 | Case ID | `concat('VOG-', formatDateTime(utcNow(), 'yyyy'), '-', triggerBody()?['record']?['id'])` |
 | Submitted At | `triggerBody()?['record']?['created_at']` |
-| Kind of Contact | `triggerBody()?['record']?['contact_type']` |
+| Contact Type | `triggerBody()?['record']?['contact_type']` |
 | Guest Name | `triggerBody()?['record']?['name']` |
 | Preferred Contact Method | `triggerBody()?['record']?['contact_method']` |
 | Guest Email | `triggerBody()?['record']?['email']` |
 | Guest Phone | `triggerBody()?['record']?['phone']` |
 | Incident Date | `triggerBody()?['record']?['date']` |
 | Store Number | `triggerBody()?['record']?['store_number']` |
+| Store Name | `concat('IHOP ', triggerBody()?['record']?['store_number'])` |
 | State | `triggerBody()?['record']?['state']` |
 | City | `triggerBody()?['record']?['city']` |
 | Address | `triggerBody()?['record']?['address']` |
 | Issue Description | `triggerBody()?['record']?['issue']` |
 | Status | `New` |
 | Priority | `Normal` |
+| Severity | `Normal` |
+| Case Category | `Other` |
 | Source | `voiceoftheguest.com` |
 | Intake Channel | `Website Form` |
 | Store Email | `triggerBody()?['record']?['store_email']` |
-| Severity | `Normal` |
+| Reopened | `No` |
+| Supabase ID | `triggerBody()?['record']?['id']` |
 
 ## Supabase Setting
 

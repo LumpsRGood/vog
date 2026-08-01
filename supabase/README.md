@@ -67,8 +67,8 @@ Add these repository secrets before running it:
 - `MS_TENANT_ID`: `d654250b-024b-4116-ad8e-36b58a13810a`
 - `MS_CLIENT_ID`: `190887df-14d8-4032-ac39-7ba33622123d`
 - `MS_CLIENT_SECRET`
-- `MS_SITE_HOSTNAME`: `opportunityrestaurantgroup-my.sharepoint.com`
-- `MS_SITE_PATH`: `/personal/gchadrick_opportunityrestaurantgroup_com`
+- `MS_SITE_HOSTNAME`: `opportunityrestaurantgroup.sharepoint.com`
+- `MS_SITE_PATH`: `/sites/GuestRelations`
 - `SYNC_WEBHOOK_SECRET`
 
 Microsoft Graph admin consent is still required for `Sites.ReadWrite.All` only when using the Graph fallback instead of Power Automate.

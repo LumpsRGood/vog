@@ -12,6 +12,9 @@ type IssueRecord = {
   address?: string | null;
   store_number?: string | number | null;
   store_email?: string | null;
+  store_name?: string | null;
+  area_director?: string | null;
+  regional_director?: string | null;
   intake_channel?: string | null;
   source?: string | null;
   issue?: string | null;
@@ -128,6 +131,21 @@ function priorityFor(record: IssueRecord) {
   return record.contact_type === "celebration" ? "Normal" : "Normal";
 }
 
+function normalizedContactType(value: unknown) {
+  const contactType = text(value).toLowerCase();
+  if (contactType === "celebration") return "Celebration";
+  if (contactType === "complaint") return "Complaint";
+  if (contactType === "question") return "Question";
+  return "Opportunity";
+}
+
+function normalizedContactMethod(value: unknown) {
+  const method = text(value).toLowerCase();
+  if (method === "phone") return "Phone";
+  if (method === "text") return "Text";
+  return "Email";
+}
+
 function listsPayload(record: IssueRecord): SupabaseWebhookPayload {
   const storeNumber = text(record.store_number);
 
@@ -136,6 +154,8 @@ function listsPayload(record: IssueRecord): SupabaseWebhookPayload {
     table: "issues",
     record: {
       ...record,
+      contact_type: normalizedContactType(record.contact_type),
+      contact_method: normalizedContactMethod(record.contact_method),
       store_number: storeNumber,
       store_email: text(record.store_email) || (storeNumber ? `ihop${storeNumber}@opportunityrestaurantgroup.com` : ""),
       source: text(record.source) || "voiceoftheguest.com",
@@ -169,27 +189,37 @@ async function createGuestCase(token: string, siteId: string, record: IssueRecor
   const columns = await getColumnMap(token, siteId, listId);
   const storeNumber = text(record.store_number);
   const storeEmail = text(record.store_email) || (storeNumber ? `ihop${storeNumber}@opportunityrestaurantgroup.com` : "");
+  const submittedAt = toIsoDateTime(record.created_at) || new Date().toISOString();
+  const incidentDate = toIsoDateTime(record.date);
+  const dueDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
 
   const fields: Record<string, unknown> = {};
   setField(fields, columns, "Case ID", caseId(record));
-  setField(fields, columns, "Submitted At", toIsoDateTime(record.created_at) || new Date().toISOString());
-  setField(fields, columns, "Kind of Contact", record.contact_type === "celebration" ? "celebration" : "opportunity");
+  setField(fields, columns, "Submitted At", submittedAt);
+  setField(fields, columns, "Contact Type", normalizedContactType(record.contact_type));
   setField(fields, columns, "Guest Name", text(record.name));
-  setField(fields, columns, "Preferred Contact Method", text(record.contact_method));
+  setField(fields, columns, "Preferred Contact Method", normalizedContactMethod(record.contact_method));
   setField(fields, columns, "Guest Email", text(record.email));
   setField(fields, columns, "Guest Phone", text(record.phone));
-  setField(fields, columns, "Incident Date", toIsoDateTime(record.date));
+  setField(fields, columns, "Incident Date", incidentDate);
   setField(fields, columns, "Store Number", storeNumber);
+  setField(fields, columns, "Store Name", text(record.store_name) || (storeNumber ? `IHOP ${storeNumber}` : ""));
   setField(fields, columns, "State", text(record.state));
   setField(fields, columns, "City", text(record.city));
   setField(fields, columns, "Address", text(record.address));
   setField(fields, columns, "Issue Description", text(record.issue));
   setField(fields, columns, "Status", "New");
   setField(fields, columns, "Priority", priorityFor(record));
+  setField(fields, columns, "Case Category", normalizedContactType(record.contact_type) === "Celebration" ? "Staff Recognition" : "Other");
   setField(fields, columns, "Source", text(record.source) || "voiceoftheguest.com");
   setField(fields, columns, "Intake Channel", text(record.intake_channel) || "Website Form");
   setField(fields, columns, "Store Email", storeEmail);
+  setField(fields, columns, "Area Director", text(record.area_director));
+  setField(fields, columns, "Regional Director", text(record.regional_director));
   setField(fields, columns, "Severity", "Normal");
+  setField(fields, columns, "Due Date", dueDate);
+  setField(fields, columns, "Reopened", "No");
+  setField(fields, columns, "Supabase ID", text(record.id));
 
   return graphFetch(token, `/sites/${siteId}/lists/${listId}/items`, {
     method: "POST",
