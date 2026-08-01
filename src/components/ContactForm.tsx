@@ -71,7 +71,7 @@ export function ContactForm() {
     try {
       // 1. Save to Supabase for tracking
       if (supabase) {
-        const { error } = await supabase.from('issues').insert([{
+        const issueRecord = {
           name: formData.name,
           contact_type: formData.contactType,
           contact_method: formData.contactMethod,
@@ -86,11 +86,34 @@ export function ContactForm() {
           intake_channel: 'Website Form',
           source: 'voiceoftheguest.com',
           issue: formData.issue
-        }]);
+        };
+
+        const { error } = await supabase.from('issues').insert([issueRecord]);
         
         if (error) {
           console.error('Supabase error:', error);
           throw new Error('Failed to save to database');
+        }
+
+        const { error: syncError } = await supabase.functions.invoke('sync-issue-to-lists', {
+          body: {
+            type: 'INSERT',
+            table: 'issues',
+            record: {
+              ...issueRecord,
+              contact_type: formData.contactType === 'celebration' ? 'Celebration' : 'Opportunity',
+              contact_method:
+                formData.contactMethod === 'phone' ? 'Phone' :
+                formData.contactMethod === 'text' ? 'Text' :
+                'Email',
+              store_name: formData.storeNumber ? `IHOP ${formData.storeNumber}` : null,
+            },
+          },
+        });
+
+        if (syncError) {
+          console.error('Microsoft Lists sync error:', syncError);
+          throw new Error('Failed to create Microsoft Lists case');
         }
       } else {
         console.warn('Supabase not configured, skipping db insert. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.');

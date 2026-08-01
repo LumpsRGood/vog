@@ -28,6 +28,11 @@ type SupabaseWebhookPayload = {
 };
 
 const graphBaseUrl = "https://graph.microsoft.com/v1.0";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-vog-sync-secret",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
 function requiredEnv(name: string) {
   const value = Deno.env.get(name);
@@ -228,34 +233,43 @@ async function createGuestCase(token: string, siteId: string, record: IssueRecor
 }
 
 Deno.serve(async (request) => {
+  if (request.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   const expectedSecret = Deno.env.get("SYNC_WEBHOOK_SECRET");
-  if (expectedSecret && request.headers.get("x-vog-sync-secret") !== expectedSecret) {
-    return new Response("Unauthorized", { status: 401 });
+  const hasValidSecret = expectedSecret && request.headers.get("x-vog-sync-secret") === expectedSecret;
+  const hasSupabaseAuth = request.headers.get("authorization")?.startsWith("Bearer ");
+  if (expectedSecret && !hasValidSecret && !hasSupabaseAuth) {
+    return new Response("Unauthorized", { status: 401, headers: corsHeaders });
   }
 
   try {
     const payload = await request.json() as SupabaseWebhookPayload;
     const record = payload.record;
     if (!record) {
-      return Response.json({ ok: true, skipped: "No record in payload" });
+      return Response.json({ ok: true, skipped: "No record in payload" }, { headers: corsHeaders });
     }
 
     const flowItem = await createGuestCaseViaPowerAutomate(record);
     if (flowItem) {
-      return Response.json({ ok: true, listItemId: flowItem.id, mode: "power-automate" });
+      return Response.json({ ok: true, listItemId: flowItem.id, mode: "power-automate" }, { headers: corsHeaders });
     }
 
     const token = await getGraphToken();
     const siteId = await getSiteId(token);
     const item = await createGuestCase(token, siteId, record);
 
-    return Response.json({ ok: true, listItemId: item?.id, mode: "graph" });
+    return Response.json({ ok: true, listItemId: item?.id, mode: "graph" }, { headers: corsHeaders });
   } catch (error) {
     console.error(error);
-    return Response.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return Response.json(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      { status: 500, headers: corsHeaders },
+    );
   }
 });
