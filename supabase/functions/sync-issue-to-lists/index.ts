@@ -59,19 +59,24 @@ function caseId(record: IssueRecord) {
   return `VOG-${new Date().getFullYear()}-${rawId.toUpperCase()}`;
 }
 
-function alertCaseId(record: IssueRecord) {
-  const rawId = text(record.id || crypto.randomUUID()).replace(/[^A-Za-z0-9]/g, "").slice(0, 8);
+function alertRawId(record: IssueRecord) {
+  const existingId = text(record.id).replace(/[^A-Za-z0-9]/g, "");
+  if (existingId) return existingId;
+  return crypto.randomUUID().replace(/[^A-Za-z0-9]/g, "").slice(0, 8);
+}
+
+function alertCaseId(rawId: string) {
   return `VOG-${rawId.toUpperCase()}`;
 }
 
-function guestCasesUrlFor(record: IssueRecord) {
-  const filterValue = encodeURIComponent(alertCaseId(record));
+function guestCasesUrlFor(rawId: string) {
+  const filterValue = encodeURIComponent(alertCaseId(rawId));
   return `https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Guest%20Cases/AllItems.aspx?FilterField1=Title&FilterValue1=${filterValue}`;
 }
 
-function issueWithCaseLink(record: IssueRecord) {
+function issueWithCaseLink(record: IssueRecord, rawId: string) {
   const issue = text(record.issue);
-  const caseUrl = guestCasesUrlFor(record);
+  const caseUrl = guestCasesUrlFor(rawId);
   if (issue.includes(caseUrl)) return issue;
   return `${issue}\n\nOpen case: ${caseUrl}`.trim();
 }
@@ -171,20 +176,22 @@ function normalizedContactMethod(value: unknown) {
 
 function listsPayload(record: IssueRecord): SupabaseWebhookPayload {
   const storeNumber = text(record.store_number);
+  const rawId = alertRawId(record);
 
   return {
     type: "INSERT",
     table: "issues",
     record: {
       ...record,
+      id: rawId,
       contact_type: normalizedContactType(record.contact_type),
       contact_method: normalizedContactMethod(record.contact_method),
       store_number: storeNumber,
       store_email: text(record.store_email) || (storeNumber ? `ihop${storeNumber}@opportunityrestaurantgroup.com` : ""),
       source: text(record.source) || "voiceoftheguest.com",
       intake_channel: text(record.intake_channel) || "Website Form",
-      case_url: guestCasesUrlFor(record),
-      issue: issueWithCaseLink(record),
+      case_url: guestCasesUrlFor(rawId),
+      issue: issueWithCaseLink(record, rawId),
     },
   };
 }
