@@ -53,7 +53,7 @@ Deno.serve(async (request) => {
 
   const { data, error } = await supabase
     .from('issues')
-    .select('id, created_at, name, contact_type, contact_method, state, city, store_number, issue, lists_sync_status')
+    .select('id, created_at, name, contact_type, contact_method, state, city, store_number, issue')
     .order('created_at', { ascending: false })
     .limit(1000);
 
