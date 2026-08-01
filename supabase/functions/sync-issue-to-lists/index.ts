@@ -18,6 +18,7 @@ type IssueRecord = {
   intake_channel?: string | null;
   source?: string | null;
   issue?: string | null;
+  case_url?: string | null;
 };
 
 type SupabaseWebhookPayload = {
@@ -56,6 +57,23 @@ function toIsoDateTime(value: unknown) {
 function caseId(record: IssueRecord) {
   const rawId = text(record.id || crypto.randomUUID()).replace(/[^A-Za-z0-9]/g, "").slice(0, 8);
   return `VOG-${new Date().getFullYear()}-${rawId.toUpperCase()}`;
+}
+
+function alertCaseId(record: IssueRecord) {
+  const rawId = text(record.id || crypto.randomUUID()).replace(/[^A-Za-z0-9]/g, "").slice(0, 8);
+  return `VOG-${rawId.toUpperCase()}`;
+}
+
+function guestCasesUrlFor(record: IssueRecord) {
+  const filterValue = encodeURIComponent(alertCaseId(record));
+  return `https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Guest%20Cases/AllItems.aspx?FilterField1=Title&FilterValue1=${filterValue}`;
+}
+
+function issueWithCaseLink(record: IssueRecord) {
+  const issue = text(record.issue);
+  const caseUrl = guestCasesUrlFor(record);
+  if (issue.includes(caseUrl)) return issue;
+  return `${issue}\n\nOpen case: ${caseUrl}`.trim();
 }
 
 async function getGraphToken() {
@@ -165,6 +183,8 @@ function listsPayload(record: IssueRecord): SupabaseWebhookPayload {
       store_email: text(record.store_email) || (storeNumber ? `ihop${storeNumber}@opportunityrestaurantgroup.com` : ""),
       source: text(record.source) || "voiceoftheguest.com",
       intake_channel: text(record.intake_channel) || "Website Form",
+      case_url: guestCasesUrlFor(record),
+      issue: issueWithCaseLink(record),
     },
   };
 }
