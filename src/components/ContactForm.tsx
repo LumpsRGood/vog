@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { GuestIssue } from '../types';
-import { STORE_LOCATIONS, STATES } from '../data/locations';
+import { STORE_LOCATIONS, STATE_OPTIONS } from '../data/locations';
 import { supabase } from '../lib/supabase';
 
 export function ContactForm() {
@@ -238,8 +238,8 @@ export function ContactForm() {
               className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-900 focus:border-stone-900 outline-none transition-all bg-white"
             >
               <option value="" disabled>Select a state</option>
-              {STATES.map(state => (
-                <option key={state} value={state}>{state}</option>
+              {STATE_OPTIONS.map(state => (
+                <option key={state.code} value={state.code}>{state.name} ({state.code})</option>
               ))}
             </select>
           </div>
