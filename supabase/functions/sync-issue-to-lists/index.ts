@@ -255,16 +255,28 @@ Deno.serve(async (request) => {
       return Response.json({ ok: true, skipped: "No record in payload" }, { headers: corsHeaders });
     }
 
-    const flowItem = await createGuestCaseViaPowerAutomate(record);
-    if (flowItem) {
-      return Response.json({ ok: true, listItemId: flowItem.id, mode: "power-automate" }, { headers: corsHeaders });
+    try {
+      const token = await getGraphToken();
+      const siteId = await getSiteId(token);
+      const item = await createGuestCase(token, siteId, record);
+
+      return Response.json({ ok: true, listItemId: item?.id, mode: "graph" }, { headers: corsHeaders });
+    } catch (graphError) {
+      console.error("Graph sync failed; trying Power Automate fallback", graphError);
+      const flowItem = await createGuestCaseViaPowerAutomate(record);
+      if (flowItem) {
+        return Response.json(
+          {
+            ok: true,
+            listItemId: flowItem.id,
+            mode: "power-automate",
+            graphError: graphError instanceof Error ? graphError.message : String(graphError),
+          },
+          { headers: corsHeaders },
+        );
+      }
+      throw graphError;
     }
-
-    const token = await getGraphToken();
-    const siteId = await getSiteId(token);
-    const item = await createGuestCase(token, siteId, record);
-
-    return Response.json({ ok: true, listItemId: item?.id, mode: "graph" }, { headers: corsHeaders });
   } catch (error) {
     console.error(error);
     return Response.json(
