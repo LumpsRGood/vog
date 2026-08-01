@@ -128,6 +128,42 @@ function priorityFor(record: IssueRecord) {
   return record.contact_type === "celebration" ? "Normal" : "Normal";
 }
 
+function listsPayload(record: IssueRecord): SupabaseWebhookPayload {
+  const storeNumber = text(record.store_number);
+
+  return {
+    type: "INSERT",
+    table: "issues",
+    record: {
+      ...record,
+      store_number: storeNumber,
+      store_email: text(record.store_email) || (storeNumber ? `ihop${storeNumber}@opportunityrestaurantgroup.com` : ""),
+      source: text(record.source) || "voiceoftheguest.com",
+      intake_channel: text(record.intake_channel) || "Website Form",
+    },
+  };
+}
+
+async function createGuestCaseViaPowerAutomate(record: IssueRecord) {
+  const flowUrl = Deno.env.get("POWER_AUTOMATE_SYNC_URL");
+  if (!flowUrl) return null;
+
+  const response = await fetch(flowUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "",
+    },
+    body: JSON.stringify(listsPayload(record)),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Power Automate request failed: ${response.status} ${await response.text()}`);
+  }
+
+  return { id: "power-automate-flow", status: response.status };
+}
+
 async function createGuestCase(token: string, siteId: string, record: IssueRecord) {
   const listId = Deno.env.get("MS_GUEST_CASES_LIST_ID") || await getListId(token, siteId, "Guest Cases");
   const columns = await getColumnMap(token, siteId, listId);
@@ -178,11 +214,16 @@ Deno.serve(async (request) => {
       return Response.json({ ok: true, skipped: "No record in payload" });
     }
 
+    const flowItem = await createGuestCaseViaPowerAutomate(record);
+    if (flowItem) {
+      return Response.json({ ok: true, listItemId: flowItem.id, mode: "power-automate" });
+    }
+
     const token = await getGraphToken();
     const siteId = await getSiteId(token);
     const item = await createGuestCase(token, siteId, record);
 
-    return Response.json({ ok: true, listItemId: item?.id });
+    return Response.json({ ok: true, listItemId: item?.id, mode: "graph" });
   } catch (error) {
     console.error(error);
     return Response.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });

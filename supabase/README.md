@@ -10,7 +10,7 @@ The primary bridge is Power Automate:
 
 This avoids tenant-wide Microsoft Graph admin consent. The flow runs under the signed-in Microsoft account's normal SharePoint/Microsoft Lists connection.
 
-The Microsoft Graph Edge Function remains in this repo as a future hardening option, but it requires tenant admin consent for `Sites.ReadWrite.All`.
+The Edge Function can also use the same Power Automate flow when `POWER_AUTOMATE_SYNC_URL` is configured. If that variable is not set, it falls back to the Microsoft Graph path, which requires tenant admin consent for `Sites.ReadWrite.All`.
 
 ## Power Automate Setup
 
@@ -56,13 +56,14 @@ where key = 'lists_sync_secret';
 
 The repository includes `.github/workflows/deploy-supabase.yml`.
 
-This workflow is for the optional Edge Function path. It is not required for the Power Automate workaround.
+This workflow is for the optional Edge Function path. With `POWER_AUTOMATE_SYNC_URL`, it can deploy the no-admin-consent workaround. Without that variable, it uses Microsoft Graph and requires admin consent.
 
 Add these repository secrets before running it:
 
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_PROJECT_ID`: `gcafnpypmmkipdwkgejw`
 - `SUPABASE_DB_PASSWORD`
+- `POWER_AUTOMATE_SYNC_URL`: the HTTP POST URL from `VOG - Supabase Issue to Guest Case`
 - `MS_TENANT_ID`: `d654250b-024b-4116-ad8e-36b58a13810a`
 - `MS_CLIENT_ID`: `190887df-14d8-4032-ac39-7ba33622123d`
 - `MS_CLIENT_SECRET`
@@ -70,7 +71,7 @@ Add these repository secrets before running it:
 - `MS_SITE_PATH`: `/personal/gchadrick_opportunityrestaurantgroup_com`
 - `SYNC_WEBHOOK_SECRET`
 
-Microsoft Graph admin consent is still required for `Sites.ReadWrite.All` before the sync can write to Microsoft Lists.
+Microsoft Graph admin consent is still required for `Sites.ReadWrite.All` only when using the Graph fallback instead of Power Automate.
 
 ## Test
 

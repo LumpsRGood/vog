@@ -36,6 +36,7 @@ jobs:
             MS_CLIENT_SECRET="${{ secrets.MS_CLIENT_SECRET }}" \
             MS_SITE_HOSTNAME="${{ secrets.MS_SITE_HOSTNAME }}" \
             MS_SITE_PATH="${{ secrets.MS_SITE_PATH }}" \
+            POWER_AUTOMATE_SYNC_URL="${{ secrets.POWER_AUTOMATE_SYNC_URL }}" \
             SYNC_WEBHOOK_SECRET="${{ secrets.SYNC_WEBHOOK_SECRET }}"
 
       - name: Deploy sync function
