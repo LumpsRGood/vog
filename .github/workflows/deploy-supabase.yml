@@ -33,10 +33,10 @@ jobs:
 
       - name: Configure Power Automate bridge
         env:
-          PGHOST: db.${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co
-          PGPORT: 5432
+          PGHOST: aws-0-us-west-2.pooler.supabase.com
+          PGPORT: 6543
           PGDATABASE: postgres
-          PGUSER: postgres
+          PGUSER: postgres.${{ secrets.SUPABASE_PROJECT_ID }}
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           POWER_AUTOMATE_SYNC_URL: ${{ secrets.POWER_AUTOMATE_SYNC_URL }}
           SYNC_WEBHOOK_SECRET: ${{ secrets.SYNC_WEBHOOK_SECRET }}
