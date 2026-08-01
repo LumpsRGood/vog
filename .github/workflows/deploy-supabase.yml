@@ -28,6 +28,34 @@ jobs:
       - name: Push database migrations
         run: supabase db push
 
+      - name: Install database client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Configure Power Automate bridge
+        if: ${{ secrets.POWER_AUTOMATE_SYNC_URL != '' }}
+        env:
+          PGHOST: db.${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co
+          PGPORT: 5432
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          POWER_AUTOMATE_SYNC_URL: ${{ secrets.POWER_AUTOMATE_SYNC_URL }}
+          SYNC_WEBHOOK_SECRET: ${{ secrets.SYNC_WEBHOOK_SECRET }}
+        run: |
+          psql "sslmode=require" \
+            --set=sync_url="$POWER_AUTOMATE_SYNC_URL" \
+            --set=sync_secret="$SYNC_WEBHOOK_SECRET" <<'SQL'
+          update public.vog_sync_settings
+          set value = :'sync_url',
+              updated_at = now()
+          where key = 'lists_sync_url';
+
+          update public.vog_sync_settings
+          set value = coalesce(:'sync_secret', ''),
+              updated_at = now()
+          where key = 'lists_sync_secret';
+          SQL
+
       - name: Set function secrets
         run: |
           supabase secrets set \
