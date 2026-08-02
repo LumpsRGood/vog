@@ -48,4 +48,6 @@
 
 ## Current Pilot Boundary
 
-The production guest intake, staff intake, Guest Cases creation, default values, and Teams alert are live. Activity synchronization, the consolidated overdue message, the Adaptive Card alert, and scheduled dashboard refresh require their Power Automate flows to be saved and tested in the Microsoft designer before the pilot is considered fully operational.
+The production guest intake, staff intake, Guest Cases creation, default values, Teams alert, and Activities synchronization are live. The consolidated overdue message, Adaptive Card alert, and scheduled dashboard refresh still require their Power Automate flows to be saved and tested in the Microsoft designer before the pilot is considered fully operational.
+
+Verified activity bridge record: `demo-activity-20260802-2`, attached to the executive demo case. The earlier `AID` row is a mapping diagnostic and must remain excluded from reporting.
