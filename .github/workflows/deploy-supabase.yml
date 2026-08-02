@@ -49,3 +49,6 @@ jobs:
 
       - name: Deploy activity sync function
         run: supabase functions deploy sync-activity-to-lists
+
+      - name: Deploy public intake function
+        run: supabase functions deploy public-intake
