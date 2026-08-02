@@ -157,12 +157,12 @@ async function getListId(token: string, siteId: string, displayName: string) {
 async function getColumnMap(token: string, siteId: string, listId: string) {
   const columns = await graphFetch(token, `/sites/${siteId}/lists/${listId}/columns?$select=name,displayName`);
   return new Map<string, string>(
-    columns.value.map((column: { name: string; displayName: string }) => [column.displayName, column.name]),
+    columns.value.map((column: { name: string; displayName: string }) => [column.displayName.trim().toLowerCase(), column.name]),
   );
 }
 
 function setField(fields: Record<string, unknown>, columns: Map<string, string>, displayName: string, value: unknown) {
-  const internalName = columns.get(displayName);
+  const internalName = columns.get(displayName.trim().toLowerCase());
   if (internalName && value !== "") {
     fields[internalName] = value;
   }
