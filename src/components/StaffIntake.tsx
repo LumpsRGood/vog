@@ -12,9 +12,14 @@ const CATEGORIES = {
   Other: ['General feedback', 'Question', 'Unknown / needs review'],
 } as const;
 
+const today = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 const emptyForm: StaffIssue = {
   name: '', contactType: 'opportunity', contactMethod: 'email', email: '', phone: '',
-  date: '', state: '', city: '', address: '', storeNumber: '', issue: '',
+  date: today(), state: '', city: '', address: '', storeNumber: '', issue: '',
   issueCategory: 'Other', issueSubcategory: 'General feedback',
   staffAccessCode: '', intakeChannel: 'Staff Intake - Phone', initialNotes: '',
 };

@@ -4,6 +4,11 @@ import { GuestIssue } from '../types';
 import { STORE_LOCATIONS, STATE_OPTIONS } from '../data/locations';
 import { submitIntake } from '../lib/intake';
 
+const today = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export function ContactForm() {
   const [formData, setFormData] = React.useState<GuestIssue>({
     name: '',
@@ -11,7 +16,7 @@ export function ContactForm() {
     contactMethod: 'email',
     email: '',
     phone: '',
-    date: '',
+    date: today(),
     state: '',
     city: '',
     address: '',
@@ -215,7 +220,7 @@ export function ContactForm() {
           <label htmlFor="date" className="text-sm font-medium text-stone-700">When did the incident occur?</label>
           <input 
             required
-            type="date" 
+            type="date"
             id="date"
             name="date"
             value={formData.date}
