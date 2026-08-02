@@ -4,8 +4,13 @@
  */
 import React from 'react';
 import { ContactForm } from './components/ContactForm';
+import { StaffIntake } from './components/StaffIntake';
 
 export default function App() {
+  if (window.location.pathname.replace(/\/$/, '') === '/staff') {
+    return <StaffIntake />;
+  }
+
   return (
     <div className="min-h-screen bg-stone-50 font-sans selection:bg-stone-200">
       {/* Header */}

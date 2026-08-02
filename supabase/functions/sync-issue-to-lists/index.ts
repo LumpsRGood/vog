@@ -18,6 +18,17 @@ type IssueRecord = {
   intake_channel?: string | null;
   source?: string | null;
   issue?: string | null;
+  issue_category?: string | null;
+  issue_subcategory?: string | null;
+  notes?: string | null;
+  status?: string | null;
+  priority?: string | null;
+  assigned_to?: string | null;
+  due_date?: string | null;
+  resolved_date?: string | null;
+  closed_date?: string | null;
+  resolution_type?: string | null;
+  resolution_summary?: string | null;
   case_url?: string | null;
 };
 
@@ -242,8 +253,11 @@ async function createGuestCase(token: string, siteId: string, record: IssueRecor
   setField(fields, columns, "City", text(record.city));
   setField(fields, columns, "Address", text(record.address));
   setField(fields, columns, "Issue Description", text(record.issue));
-  setField(fields, columns, "Status", "New");
-  setField(fields, columns, "Priority", priorityFor(record));
+  setField(fields, columns, "Issue Category", text(record.issue_category));
+  setField(fields, columns, "Issue Subcategory", text(record.issue_subcategory));
+  setField(fields, columns, "Internal Notes", text(record.notes));
+  setField(fields, columns, "Status", text(record.status) || "New");
+  setField(fields, columns, "Priority", text(record.priority) || priorityFor(record));
   setField(fields, columns, "Case Category", normalizedContactType(record.contact_type) === "Celebration" ? "Staff Recognition" : "Other");
   setField(fields, columns, "Source", text(record.source) || "voiceoftheguest.com");
   setField(fields, columns, "Intake Channel", text(record.intake_channel) || "Website Form");
@@ -251,7 +265,12 @@ async function createGuestCase(token: string, siteId: string, record: IssueRecor
   setField(fields, columns, "Area Director", text(record.area_director));
   setField(fields, columns, "Regional Director", text(record.regional_director));
   setField(fields, columns, "Severity", "Normal");
-  setField(fields, columns, "Due Date", dueDate);
+  setField(fields, columns, "Due Date", text(record.due_date) || dueDate);
+  setField(fields, columns, "Assigned To", text(record.assigned_to));
+  setField(fields, columns, "Resolved Date", toIsoDateTime(record.resolved_date));
+  setField(fields, columns, "Closed Date", toIsoDateTime(record.closed_date));
+  setField(fields, columns, "Resolution Type", text(record.resolution_type));
+  setField(fields, columns, "Resolution Summary", text(record.resolution_summary));
   setField(fields, columns, "Reopened", "No");
   setField(fields, columns, "Supabase ID", text(record.id));
 
