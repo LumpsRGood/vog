@@ -54,7 +54,7 @@ export function StaffIntake() {
     if (!formData.staffAccessCode.trim()) return setError('Enter the staff access code.');
     if (!supabase) return setError('The intake service is not configured yet.');
     const { data, error: invokeError } = await supabase.functions.invoke('staff-intake', { body: { access_code: formData.staffAccessCode, validate_only: true } });
-    if (invokeError || !data?.ok) return setError(data?.error || invokeError?.message || 'Invalid staff access code.');
+    if (invokeError || !data?.ok) return setError(data?.error || 'The staff intake service could not verify this code. Please try again.');
     setAuthorized(true);
   };
 

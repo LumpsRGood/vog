@@ -18,7 +18,7 @@ Deno.serve(async (request) => {
     const { access_code, record, validate_only } = await request.json();
     const expectedCode = Deno.env.get("STAFF_INTAKE_CODE");
     if (!expectedCode || access_code !== expectedCode) {
-      return Response.json({ ok: false, error: "Invalid staff access code." }, { status: 401, headers: corsHeaders });
+      return Response.json({ ok: false, error: "Invalid staff access code. Please use the current Guest Relations staff code." }, { status: 200, headers: corsHeaders });
     }
     if (validate_only) {
       return Response.json({ ok: true, authorized: true }, { headers: corsHeaders });
@@ -54,6 +54,6 @@ Deno.serve(async (request) => {
     return Response.json({ ok: true, issue_id: data.id }, { headers: corsHeaders });
   } catch (error) {
     console.error(error);
-    return Response.json({ ok: false, error: error instanceof Error ? error.message : "Unable to create case." }, { status: 500, headers: corsHeaders });
+    return Response.json({ ok: false, error: error instanceof Error ? error.message : "Unable to create case." }, { status: 200, headers: corsHeaders });
   }
 });

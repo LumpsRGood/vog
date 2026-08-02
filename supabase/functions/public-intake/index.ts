@@ -13,5 +13,5 @@ Deno.serve(async (request) => {
     const sync = await fetch(`${url}/functions/v1/sync-issue-to-lists`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" }, body: JSON.stringify({ type: "INSERT", table: "issues", record: data }) });
     if (!sync.ok) throw new Error(`Lists sync failed: ${await sync.text()}`);
     return Response.json({ ok: true, issue_id: data.id }, { headers: cors });
-  } catch (error) { console.error(error); return Response.json({ ok: false, error: error instanceof Error ? error.message : "Unable to submit report." }, { status: 500, headers: cors }); }
+  } catch (error) { console.error(error); return Response.json({ ok: false, error: error instanceof Error ? error.message : "Unable to submit report." }, { status: 200, headers: cors }); }
 });
