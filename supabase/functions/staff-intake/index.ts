@@ -32,14 +32,16 @@ Deno.serve(async (request) => {
     if (error) throw error;
 
     if (notes?.trim()) {
-      const { error: activityError } = await admin.from("activities").insert({
+      const { data: activity, error: activityError } = await admin.from("activities").insert({
         issue_id: data.id,
         case_id: `VOG-${String(data.id).replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase()}`,
         activity_type: "Initial staff note",
         note: notes.trim(),
         staff_member: "Staff Intake",
-      });
+      }).select().single();
       if (activityError) throw activityError;
+      const activitySync = await fetch(`${supabaseUrl}/functions/v1/sync-activity-to-lists`, { method: "POST", headers: { "Content-Type": "application/json", "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" }, body: JSON.stringify({ type: "INSERT", table: "activities", record: activity }) });
+      if (!activitySync.ok) throw new Error(`Activities sync failed: ${await activitySync.text()}`);
     }
 
     const syncUrl = `${supabaseUrl}/functions/v1/sync-issue-to-lists`;
