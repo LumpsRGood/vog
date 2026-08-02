@@ -72,7 +72,7 @@ export function StaffIntake() {
             issue_category: formData.issueCategory, issue_subcategory: formData.issueSubcategory,
             notes: formData.initialNotes,
           },
-        });
+        }});
       if (invokeError || !data?.ok) throw new Error(data?.error || invokeError?.message || 'Could not create the case.');
       setSuccess(true);
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not create the case.'); }
