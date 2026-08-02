@@ -61,14 +61,14 @@ Deno.serve(async (request) => {
         staff_member: "Staff Intake",
       }).select().single();
       if (activityError) throw activityError;
-      const activitySync = await fetch(`${supabaseUrl}/functions/v1/sync-activity-to-lists`, { method: "POST", headers: { "Content-Type": "application/json", "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" }, body: JSON.stringify({ type: "INSERT", table: "activities", record: activity }) });
+      const activitySync = await fetch(`${supabaseUrl}/functions/v1/sync-activity-to-lists`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceRoleKey}`, "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" }, body: JSON.stringify({ type: "INSERT", table: "activities", record: activity }) });
       if (!activitySync.ok) throw new Error(`Activities sync failed: ${await activitySync.text()}`);
     }
 
     const syncUrl = `${supabaseUrl}/functions/v1/sync-issue-to-lists`;
     const syncResponse = await fetch(syncUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceRoleKey}`, "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" },
       body: JSON.stringify({ type: "INSERT", table: "issues", record: { ...record, ...data } }),
     });
     if (!syncResponse.ok) throw new Error(`Lists sync failed: ${await syncResponse.text()}`);
