@@ -55,7 +55,7 @@ Deno.serve(async (request) => {
     if (notes?.trim()) {
       const { data: activity, error: activityError } = await admin.from("activities").insert({
         issue_id: data.id,
-        case_id: `VOG-${String(data.id).replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase()}`,
+        case_id: `VOG-${String(data.id).replace(/[^A-Za-z0-9]/g, "")}`,
         activity_type: "Initial staff note",
         note: notes.trim(),
         staff_member: "Staff Intake",
