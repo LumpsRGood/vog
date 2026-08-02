@@ -27,8 +27,20 @@ Deno.serve(async (request) => {
       return Response.json({ ok: false, error: "Please complete the required case fields." }, { status: 400, headers: corsHeaders });
     }
 
-    const { data, error } = await admin.from("issues").insert({ ...record, status: "New", priority: "Normal" }).select().single();
+    const { notes, ...issueFields } = record;
+    const { data, error } = await admin.from("issues").insert({ ...issueFields, notes, status: "New", priority: "Normal" }).select().single();
     if (error) throw error;
+
+    if (notes?.trim()) {
+      const { error: activityError } = await admin.from("activities").insert({
+        issue_id: data.id,
+        case_id: `VOG-${String(data.id).replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase()}`,
+        activity_type: "Initial staff note",
+        note: notes.trim(),
+        staff_member: "Staff Intake",
+      });
+      if (activityError) throw activityError;
+    }
 
     const syncUrl = `${supabaseUrl}/functions/v1/sync-issue-to-lists`;
     const syncResponse = await fetch(syncUrl, {
