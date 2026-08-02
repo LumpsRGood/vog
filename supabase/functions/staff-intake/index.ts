@@ -27,8 +27,29 @@ Deno.serve(async (request) => {
       return Response.json({ ok: false, error: "Please complete the required case fields." }, { status: 400, headers: corsHeaders });
     }
 
-    const { notes, ...issueFields } = record;
-    const { data, error } = await admin.from("issues").insert({ ...issueFields, notes, status: "New", priority: "Normal" }).select().single();
+    const notes = record.notes || null;
+    const issueFields = {
+      name: record.name,
+      contact_type: record.contact_type,
+      contact_method: record.contact_method,
+      email: record.email || null,
+      phone: record.phone || null,
+      date: record.date,
+      state: record.state,
+      city: record.city,
+      address: record.address || null,
+      store_number: record.store_number,
+      store_email: record.store_email || null,
+      intake_channel: record.intake_channel || "Staff Intake",
+      source: "Staff Intake",
+      issue: record.issue,
+      issue_category: record.issue_category || null,
+      issue_subcategory: record.issue_subcategory || null,
+      notes,
+      status: "New",
+      priority: "Normal",
+    };
+    const { data, error } = await admin.from("issues").insert(issueFields).select().single();
     if (error) throw error;
 
     if (notes?.trim()) {
@@ -48,12 +69,13 @@ Deno.serve(async (request) => {
     const syncResponse = await fetch(syncUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" },
-      body: JSON.stringify({ type: "INSERT", table: "issues", record: data }),
+      body: JSON.stringify({ type: "INSERT", table: "issues", record: { ...record, ...data } }),
     });
     if (!syncResponse.ok) throw new Error(`Lists sync failed: ${await syncResponse.text()}`);
     return Response.json({ ok: true, issue_id: data.id }, { headers: corsHeaders });
   } catch (error) {
     console.error(error);
-    return Response.json({ ok: false, error: error instanceof Error ? error.message : "Unable to create case." }, { status: 200, headers: corsHeaders });
+    const message = error instanceof Error ? error.message : typeof error === "object" && error && "message" in error ? String(error.message) : "Unable to create case.";
+    return Response.json({ ok: false, error: message }, { status: 200, headers: corsHeaders });
   }
 });
