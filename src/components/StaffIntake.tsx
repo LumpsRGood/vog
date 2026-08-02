@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { ArrowLeft, CheckCircle2, LockKeyhole, Send } from 'lucide-react';
 import { StaffIssue } from '../types';
 import { STORE_LOCATIONS, STATE_OPTIONS } from '../data/locations';
-import { supabase } from '../lib/supabase';
+import { submitIntake } from '../lib/intake';
 
 const CATEGORIES = {
   Service: ['Wait time', 'Order accuracy', 'Hospitality', 'Cleanliness'],
@@ -52,19 +52,19 @@ export function StaffIntake() {
     event.preventDefault();
     setError('');
     if (!formData.staffAccessCode.trim()) return setError('Enter the staff access code.');
-    if (!supabase) return setError('The intake service is not configured yet.');
-    const { data, error: invokeError } = await supabase.functions.invoke('staff-intake', { body: { access_code: formData.staffAccessCode, validate_only: true } });
-    if (invokeError || !data?.ok) return setError(data?.error || 'The staff intake service could not verify this code. Please try again.');
-    setAuthorized(true);
+    try {
+      await submitIntake('staff-intake', { access_code: formData.staffAccessCode, validate_only: true });
+      setAuthorized(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'The staff intake service could not verify this code. Please try again.');
+    }
   };
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true); setError('');
     try {
-      if (!supabase) throw new Error('The intake service is not configured yet.');
-      const { data, error: invokeError } = await supabase.functions.invoke('staff-intake', {
-        body: {
+      await submitIntake('staff-intake', {
           access_code: formData.staffAccessCode,
           record: {
             name: formData.name, contact_type: formData.contactType, contact_method: formData.contactMethod,
@@ -75,8 +75,7 @@ export function StaffIntake() {
             issue_category: formData.issueCategory, issue_subcategory: formData.issueSubcategory,
             notes: formData.initialNotes,
           },
-        }});
-      if (invokeError || !data?.ok) throw new Error(data?.error || invokeError?.message || 'Could not create the case.');
+        });
       setSuccess(true);
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not create the case.'); }
     finally { setIsSubmitting(false); }

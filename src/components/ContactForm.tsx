@@ -2,7 +2,7 @@ import React, { useMemo, useEffect } from 'react';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { GuestIssue } from '../types';
 import { STORE_LOCATIONS, STATE_OPTIONS } from '../data/locations';
-import { supabase } from '../lib/supabase';
+import { submitIntake } from '../lib/intake';
 
 export function ContactForm() {
   const [formData, setFormData] = React.useState<GuestIssue>({
@@ -71,9 +71,7 @@ export function ContactForm() {
     setSubmitError('');
     
     try {
-      // 1. Save to Supabase for tracking
-      if (supabase) {
-        const issueRecord = {
+      const issueRecord = {
           name: formData.name,
           contact_type: formData.contactType,
           contact_method: formData.contactMethod,
@@ -90,13 +88,12 @@ export function ContactForm() {
           issue: formData.issue
         };
 
-        const { data, error: submitError } = await supabase.functions.invoke('public-intake', {
-          body: { ...issueRecord, contact_type: formData.contactType === 'celebration' ? 'Celebration' : 'Opportunity', contact_method: formData.contactMethod === 'phone' ? 'Phone' : formData.contactMethod === 'text' ? 'Text' : 'Email', store_name: formData.storeNumber ? `IHOP ${formData.storeNumber}` : null },
-        });
-        if (submitError || !data?.ok) throw new Error(data?.error || submitError?.message || 'Failed to create case');
-      } else {
-        console.warn('Supabase not configured, skipping db insert. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.');
-      }
+      await submitIntake('public-intake', {
+        ...issueRecord,
+        contact_type: formData.contactType === 'celebration' ? 'Celebration' : 'Opportunity',
+        contact_method: formData.contactMethod === 'phone' ? 'Phone' : formData.contactMethod === 'text' ? 'Text' : 'Email',
+        store_name: formData.storeNumber ? `IHOP ${formData.storeNumber}` : null,
+      });
 
       setIsSuccess(true);
     } catch (error) {
