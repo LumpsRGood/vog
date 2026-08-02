@@ -37,6 +37,7 @@ jobs:
             MS_SITE_HOSTNAME="${{ secrets.MS_SITE_HOSTNAME }}" \
             MS_SITE_PATH="${{ secrets.MS_SITE_PATH }}" \
             POWER_AUTOMATE_SYNC_URL="${{ secrets.POWER_AUTOMATE_SYNC_URL }}" \
+            POWER_AUTOMATE_ACTIVITY_SYNC_URL="${{ secrets.POWER_AUTOMATE_ACTIVITY_SYNC_URL }}" \
             SYNC_WEBHOOK_SECRET="${{ secrets.SYNC_WEBHOOK_SECRET }}" \
             STAFF_INTAKE_CODE="${{ secrets.STAFF_INTAKE_CODE }}" \
             SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"

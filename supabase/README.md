@@ -64,6 +64,7 @@ Add these repository secrets before running it:
 - `SUPABASE_PROJECT_ID`: `gcafnpypmmkipdwkgejw`
 - `SUPABASE_DB_PASSWORD`
 - `POWER_AUTOMATE_SYNC_URL`: the HTTP POST URL from `VOG - Supabase Issue to Guest Case`
+- `POWER_AUTOMATE_ACTIVITY_SYNC_URL`: the HTTP POST URL from `VOG - Create Activity`
 - `MS_TENANT_ID`: `d654250b-024b-4116-ad8e-36b58a13810a`
 - `MS_CLIENT_ID`: `190887df-14d8-4032-ac39-7ba33622123d`
 - `MS_CLIENT_SECRET`
