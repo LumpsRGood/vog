@@ -62,7 +62,7 @@ Deno.serve(async (request) => {
       }).select().single();
       if (activityError) throw activityError;
       const activitySync = await fetch(`${supabaseUrl}/functions/v1/sync-activity-to-lists`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceRoleKey}`, "x-vog-sync-secret": Deno.env.get("SYNC_WEBHOOK_SECRET") || "" }, body: JSON.stringify({ type: "INSERT", table: "activities", record: activity }) });
-      if (!activitySync.ok) throw new Error(`Activities sync failed: ${await activitySync.text()}`);
+      if (!activitySync.ok) console.error("Activities list sync pending", await activitySync.text());
     }
 
     const syncUrl = `${supabaseUrl}/functions/v1/sync-issue-to-lists`;
