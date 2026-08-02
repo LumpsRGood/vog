@@ -215,7 +215,7 @@ export function ContactForm() {
           <label htmlFor="date" className="text-sm font-medium text-stone-700">When did the incident occur?</label>
           <input 
             required
-            type="datetime-local" 
+            type="date" 
             id="date"
             name="date"
             value={formData.date}
