@@ -71,7 +71,7 @@ Add these repository secrets before running it:
 - `MS_SITE_PATH`: `/sites/GuestRelations`
 - `SYNC_WEBHOOK_SECRET`
 - `STAFF_INTAKE_CODE`: shared code used by the protected `/staff` page
-- `SUPABASE_SERVICE_ROLE_KEY`: required by the server-side staff intake function
+- `SUPABASE_SERVICE_ROLE_KEY`: the Supabase Secret key required by the server-side staff intake function
 
 Microsoft Graph admin consent is still required for `Sites.ReadWrite.All` only when using the Graph fallback instead of Power Automate.
 
