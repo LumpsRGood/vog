@@ -15,10 +15,13 @@ Deno.serve(async (request) => {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
   try {
-    const { access_code, record } = await request.json();
+    const { access_code, record, validate_only } = await request.json();
     const expectedCode = Deno.env.get("STAFF_INTAKE_CODE");
     if (!expectedCode || access_code !== expectedCode) {
       return Response.json({ ok: false, error: "Invalid staff access code." }, { status: 401, headers: corsHeaders });
+    }
+    if (validate_only) {
+      return Response.json({ ok: true, authorized: true }, { headers: corsHeaders });
     }
     if (!record?.name || !record?.date || !record?.state || !record?.city || !record?.store_number || !record?.issue) {
       return Response.json({ ok: false, error: "Please complete the required case fields." }, { status: 400, headers: corsHeaders });

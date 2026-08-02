@@ -48,10 +48,13 @@ export function StaffIntake() {
     return next;
   });
 
-  const authorize = (event: React.FormEvent) => {
+  const authorize = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
     if (!formData.staffAccessCode.trim()) return setError('Enter the staff access code.');
+    if (!supabase) return setError('The intake service is not configured yet.');
+    const { data, error: invokeError } = await supabase.functions.invoke('staff-intake', { body: { access_code: formData.staffAccessCode, validate_only: true } });
+    if (invokeError || !data?.ok) return setError(data?.error || invokeError?.message || 'Invalid staff access code.');
     setAuthorized(true);
   };
 
