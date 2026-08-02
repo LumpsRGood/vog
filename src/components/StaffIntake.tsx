@@ -35,6 +35,7 @@ export function StaffIntake() {
   const [authorized, setAuthorized] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
+  const [createdCaseUrl, setCreatedCaseUrl] = React.useState('');
   const [error, setError] = React.useState('');
 
   const availableCities = useMemo(() => formData.state
@@ -69,7 +70,7 @@ export function StaffIntake() {
     event.preventDefault();
     setIsSubmitting(true); setError('');
     try {
-      await submitIntake('staff-intake', {
+      const result = await submitIntake('staff-intake', {
           access_code: formData.staffAccessCode,
           record: {
             name: formData.name, contact_type: formData.contactType, contact_method: formData.contactMethod,
@@ -81,12 +82,16 @@ export function StaffIntake() {
             notes: formData.initialNotes,
           },
         });
+      const rawId = String(result.issue_id || '').replace(/[^A-Za-z0-9]/g, '');
+      const caseId = rawId ? `VOG-${rawId}` : '';
+      const listUrl = 'https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Guest%20Cases/AllItems.aspx';
+      setCreatedCaseUrl(caseId ? `${listUrl}?FilterField1=Title&FilterValue1=${encodeURIComponent(caseId)}` : listUrl);
       setSuccess(true);
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not create the case.'); }
     finally { setIsSubmitting(false); }
   };
 
-  if (success) return <Shell><div className="bg-green-50 border border-green-200 rounded-2xl p-10 text-center"><CheckCircle2 className="w-14 h-14 text-green-600 mx-auto mb-5" /><h2 className="text-2xl font-semibold text-green-900">Case created</h2><p className="mt-3 text-green-800">The case is now in Guest Cases and the team alert will include its link.</p><button className="mt-7 px-5 py-2.5 rounded-lg bg-stone-900 text-white" onClick={() => { setFormData(emptyForm); setSuccess(false); setAuthorized(false); }}>Create another case</button></div></Shell>;
+  if (success) return <Shell><div className="bg-green-50 border border-green-200 rounded-lg p-8 md:p-10 text-center"><CheckCircle2 className="w-14 h-14 text-green-600 mx-auto mb-5" /><h2 className="text-2xl font-semibold text-green-900">Case created</h2><p className="mt-3 text-green-800">The case is in Guest Cases and its team alert includes the same case link.</p><div className="mt-7 flex flex-wrap justify-center gap-3"><a href={createdCaseUrl} target="_blank" rel="noreferrer" className="px-5 py-2.5 rounded-lg bg-stone-900 text-white">Open case</a><a href="https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Activities/AllItems.aspx" target="_blank" rel="noreferrer" className="px-5 py-2.5 rounded-lg border border-stone-300 bg-white text-stone-800">Activity history</a><button className="px-5 py-2.5 rounded-lg border border-stone-300 bg-white text-stone-800" onClick={() => { setFormData({ ...emptyForm, date: today() }); setSuccess(false); setAuthorized(false); setCreatedCaseUrl(''); }}>Create another</button></div></div></Shell>;
 
   if (!authorized) return <Shell><div className="max-w-md mx-auto bg-white rounded-2xl border border-stone-200 shadow-sm p-8"><LockKeyhole className="w-10 h-10 text-stone-700 mb-5" /><h2 className="text-2xl font-semibold text-stone-900">Staff access</h2><p className="mt-2 text-stone-600">Enter the staff access code to open the case intake form.</p><form onSubmit={authorize} className="mt-6 space-y-4"><Field label="Access code" required><input autoFocus type="password" value={formData.staffAccessCode} onChange={e => update('staffAccessCode', e.target.value)} className={inputClass} required /></Field>{error && <p className="text-sm text-red-700">{error}</p>}<button className="w-full px-5 py-2.5 rounded-lg bg-stone-900 text-white">Continue</button></form></div></Shell>;
 
