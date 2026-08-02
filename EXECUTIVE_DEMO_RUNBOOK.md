@@ -7,6 +7,7 @@
 - Guest Cases: https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Guest%20Cases/AllItems.aspx
 - Activities: https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Activities/AllItems.aspx
 - Dashboard: https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Shared%20Documents/VOG_Demo_Dashboard.xlsx?web=1
+- Corrective Actions: https://opportunityrestaurantgroup.sharepoint.com/sites/GuestRelations/Lists/Corrective%20Actions/AllItems.aspx
 - Teams alerts: Guest Relations > Guest Case Alerts
 
 ## Verified Demo Case
@@ -26,7 +27,7 @@
 4. Assign the case to a staff member, set a follow-up date, and change the status to Assigned or In Progress.
 5. Open Activities and add a note using the same Case ID. Demonstrate a call, email, follow-up, or internal note without overwriting prior history.
 6. Return to Guest Cases, add the resolution type and summary, set the resolved date, then set the closed date when the guest relationship is complete.
-7. Open the dashboard in Teams or SharePoint. Show open, overdue, resolved, closed, source, store, state, issue category, recurring issue, repeat guest, and response-time measures.
+7. Open the dashboard in Teams or SharePoint. Lead with repeat locations, root causes, escalation history, action effectiveness and post-action recurrence. Then show supporting workload and timeliness measures.
 8. Close with the operating model: Microsoft Lists is the business source of truth; Supabase is the intake and delivery layer; Teams is the action surface; Excel is the initial executive reporting surface.
 
 ## Staff Operating Routine
