@@ -38,7 +38,10 @@ Request body JSON schema:
         "store_email": { "type": ["string", "null"] },
         "intake_channel": { "type": ["string", "null"] },
         "source": { "type": ["string", "null"] },
-        "issue": { "type": ["string", "null"] }
+        "issue": { "type": ["string", "null"] },
+        "issue_category": { "type": ["string", "null"] },
+        "issue_subcategory": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
       }
     }
   }
@@ -81,6 +84,9 @@ Recommended field mapping:
 | City | `triggerBody()?['record']?['city']` |
 | Address | `triggerBody()?['record']?['address']` |
 | Issue Description | `triggerBody()?['record']?['issue']` |
+| Issue Category | `triggerBody()?['record']?['issue_category']` |
+| Issue Subcategory | `triggerBody()?['record']?['issue_subcategory']` |
+| Internal Notes | `triggerBody()?['record']?['notes']` |
 | Status | `New` |
 | Priority | `Normal` |
 | Severity | `Normal` |
@@ -90,6 +96,10 @@ Recommended field mapping:
 | Store Email | `triggerBody()?['record']?['store_email']` |
 | Reopened | `No` |
 | Supabase ID | `triggerBody()?['record']?['id']` |
+
+## Activities flow
+
+Create a second flow named `VOG - Staff Activity to Activities` with the same HTTP trigger pattern. Its `Create item` action should target the SharePoint `Activities` list and map `case_id`, `activity_at`, `staff_member`, `activity_type`, `note`, `next_action`, and `next_follow_up_date`. The staff update form should use this flow so the activity history remains append-only.
 
 ## Supabase Setting
 
