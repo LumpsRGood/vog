@@ -21,6 +21,7 @@ export function ContactForm() {
   
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState('');
 
   // Filter cities based on selected state
   const availableCities = useMemo(() => {
@@ -67,6 +68,7 @@ export function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError('');
     
     try {
       // 1. Save to Supabase for tracking
@@ -99,7 +101,7 @@ export function ContactForm() {
       setIsSuccess(true);
     } catch (error) {
       console.error("Submission failed", error);
-      alert("There was an issue submitting your report. Please try again.");
+      setSubmitError(error instanceof Error ? error.message : "There was an issue submitting your report. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -302,6 +304,7 @@ export function ContactForm() {
           />
         </div>
 
+        {submitError && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{submitError}</div>}
         <button 
           type="submit" 
           disabled={isSubmitting}
