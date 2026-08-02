@@ -7,7 +7,8 @@ import { ContactForm } from './components/ContactForm';
 import { StaffIntake } from './components/StaffIntake';
 
 export default function App() {
-  if (window.location.pathname.replace(/\/$/, '') === '/staff') {
+  const routedPath = new URLSearchParams(window.location.search).get('route') || window.location.pathname;
+  if (routedPath.replace(/\/$/, '') === '/staff') {
     return <StaffIntake />;
   }
 

@@ -1,0 +1,5 @@
+<!doctype html>
+<html><head><meta charset="UTF-8"><script>
+  const target = location.pathname + location.search + location.hash;
+  location.replace('/?route=' + encodeURIComponent(target));
+</script></head><body></body></html>
