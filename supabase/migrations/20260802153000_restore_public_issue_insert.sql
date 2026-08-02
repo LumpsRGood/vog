@@ -5,4 +5,4 @@ create policy "Allow anonymous issue intake"
   on public.issues
   for insert
   to anon, authenticated
-  with check (name is not null and date is not null and state is not null and city is not null and store_number is not null and issue is not null);
+  with check (true);
